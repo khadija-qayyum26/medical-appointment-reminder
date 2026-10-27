@@ -19,6 +19,23 @@ st.set_page_config(
 DB_PATH = BASE_DIR / "appointments.db"
 
 
+# ---------------- API KEY SETUP ----------------
+def get_api_key():
+    # First, try the local .env file
+    api_key = os.getenv("GROQ_API_KEY", "").strip()
+
+    # If not found, try Streamlit Cloud Secrets
+    if not api_key:
+        try:
+            api_key = str(
+                st.secrets["GROQ_API_KEY"]
+            ).strip()
+        except (KeyError, FileNotFoundError):
+            api_key = ""
+
+    return api_key
+
+
 # ---------------- DATABASE SETUP ----------------
 def create_db():
     conn = sqlite3.connect(DB_PATH)
@@ -184,12 +201,12 @@ if rows:
     )
 
     if st.button("Generate AI Reminder"):
-        api_key = os.getenv("GROQ_API_KEY", "").strip()
+        api_key = get_api_key()
 
         if not api_key:
             st.error(
-                "API key not found. Check that .env is in the same "
-                "folder as main.py and contains GROQ_API_KEY=your_key"
+                "API key not found. Please add GROQ_API_KEY "
+                "in Streamlit Secrets or your local .env file."
             )
         else:
             appointment = reminder_options[selected_reminder]
@@ -215,7 +232,8 @@ if rows:
                                 "content": (
                                     f"Patient: {appointment[1]}\n"
                                     f"Doctor: {appointment[3]}\n"
-                                    f"Appointment date and time: {appointment[4]}\n"
+                                    f"Appointment date and time: "
+                                    f"{appointment[4]}\n"
                                     f"Status: {appointment[5]}\n"
                                     "Write a reminder message for this appointment."
                                 )
@@ -243,8 +261,9 @@ if rows:
                 st.error("AI reminder could not be generated.")
                 st.write("Error type:", type(e).__name__)
 
-                # Show useful diagnostic details, but never show the API key.
-                error_message = str(e).replace(api_key, "[HIDDEN API KEY]")
+                error_message = str(e).replace(
+                    api_key, "[HIDDEN API KEY]"
+                )
                 st.code(error_message)
 
 else:
