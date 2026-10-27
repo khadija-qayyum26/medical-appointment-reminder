@@ -45,6 +45,4 @@ A web-based application built with Python and Streamlit to manage medical appoin
 - Do not upload your `.env` file.
 - Do not upload patient databases or confidential patient information.
 
-## Project Status
 
-This project is under development. AI reminders are generated for review and are not automatically sent to patients.
